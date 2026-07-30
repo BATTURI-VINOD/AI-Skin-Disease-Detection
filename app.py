@@ -74,8 +74,6 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-@app.route("/predict", methods=["POST"])
-def predict():
     try:
         image = request.files["image"]
 
@@ -102,6 +100,7 @@ def predict():
         disease = CLASS_NAMES[index]
 
         info = DISEASE_INFO[disease]
+
         global latest_prediction
 
         latest_prediction = {
@@ -110,19 +109,21 @@ def predict():
             "info": info,
             "image": filepath
         }
+
         save_prediction(
-        disease,
-        confidence,
-        filepath
+            disease,
+            confidence,
+            filepath
         )
+
         return render_template(
             "index.html",
             prediction=disease,
             confidence=confidence,
             info=info,
-            image_file=filepath,
-            
+            image_file=filepath
         )
+
     except Exception as e:
         import traceback
         traceback.print_exc()
