@@ -40,11 +40,26 @@ model = tf.keras.models.load_model(
 )
 
 
+
+
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# Create folders if they don't exist
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+os.makedirs("reports", exist_ok=True)
+
+# Load model
+model = tf.keras.models.load_model(
+    "model/SkinDisease_EfficientNetB0.keras"
+)
+
+# Initialize database
+init_db()
 model = tf.keras.models.load_model(
     "model/SkinDisease_EfficientNetB0.keras"
 )
@@ -59,53 +74,59 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        image = request.files["image"]
 
-    image = request.files["image"]
+        filename = secure_filename(image.filename)
 
-    filename = secure_filename(image.filename)
+        filepath = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
 
-    filepath = os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        filename
-    )
+        image.save(filepath)
 
-    image.save(filepath)
+        processed = preprocess_image(filepath)
 
-    processed = preprocess_image(filepath)
+        prediction = model.predict(processed)
 
-    prediction = model.predict(processed)
+        index = np.argmax(prediction)
 
-    index = np.argmax(prediction)
+        confidence = round(
+            float(np.max(prediction) * 100),
+            2
+        )
 
-    confidence = round(
-        float(np.max(prediction) * 100),
-        2
-    )
+        disease = CLASS_NAMES[index]
 
-    disease = CLASS_NAMES[index]
+        info = DISEASE_INFO[disease]
+        global latest_prediction
 
-    info = DISEASE_INFO[disease]
-    global latest_prediction
-
-    latest_prediction = {
-        "disease": disease,
-        "confidence": confidence,
-        "info": info,
-        "image": filepath
-    }
-    save_prediction(
-    disease,
-    confidence,
-    filepath
-    )
-    return render_template(
-        "index.html",
-        prediction=disease,
-        confidence=confidence,
-        info=info,
-        image_file=filepath,
-        
-    )
+        latest_prediction = {
+            "disease": disease,
+            "confidence": confidence,
+            "info": info,
+            "image": filepath
+        }
+        save_prediction(
+        disease,
+        confidence,
+        filepath
+        )
+        return render_template(
+            "index.html",
+            prediction=disease,
+            confidence=confidence,
+            info=info,
+            image_file=filepath,
+            
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return str(e), 500
 @app.route("/history")
 def history():
 
@@ -174,4 +195,4 @@ def dashboard():
         best_prediction=best_prediction
     )
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
