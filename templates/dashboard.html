@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<header>
+    <h1>📊 AI Skin Disease Dashboard</h1>
+    <p>Medical Analytics Dashboard</p>
+</header>
+
+<div class="dashboard-container">
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card total">
+            <h2 id="totalCounter">{{ stats.total }}</h2>
+            <p>Total Predictions</p>
+        </div>
+
+        <div class="stat-card average">
+            <h2 id="avgCounter">{{ stats.average }}</h2>
+            <p>Average Confidence</p>
+        </div>
+
+        <div class="stat-card diseases">
+            <h2 id="diseaseCounter">{{ stats.diseases }}</h2>
+            <p>Disease Types</p>
+        </div>
+
+        <div class="stat-card today">
+            <h2 id="todayCounter">{{ stats.today }}</h2>
+            <p>Today's Predictions</p>
+        </div>
+
+    </div>
+
+    <!-- Extra Cards -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <h2>{{ most_common[0] }}</h2>
+            <p>Most Common Disease</p>
+        </div>
+
+        <div class="stat-card">
+            <h2>{{ best_prediction[1] }}%</h2>
+            <p>Highest Confidence</p>
+        </div>
+
+    </div>
+
+    <!-- Charts -->
+    <div class="charts">
+
+        <div class="chart-card">
+            <h3>Disease Distribution</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>Prediction Trend</h3>
+            <canvas id="lineChart"></canvas>
+        </div>
+
+    </div>
+
+    <div class="chart-card">
+        <h3>Disease Frequency</h3>
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <!-- Recent Predictions -->
+    <div class="recent-card">
+
+        <h2>Recent Predictions</h2>
+
+        <table class="history-table">
+
+            <tr>
+                <th>Image</th>
+                <th>Disease</th>
+                <th>Confidence</th>
+                <th>Date</th>
+            </tr>
+
+            {% for row in recent %}
+
+            <tr>
+
+                <td>
+                    <img src="/{{ row[3] }}" class="thumb">
+                </td>
+
+                <td>{{ row[1] }}</td>
+
+                <td>{{ row[2] }}%</td>
+
+                <td>{{ row[4] }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+
+        <a href="/" class="history-btn">
+            🏠 Home
+        </a>
+
+        <a href="/history" class="history-btn">
+            📜 History
+        </a>
+
+    </div>
+
+</div>
+
+<!-- ===========================
+     Charts
+=========================== -->
+
+<script>
+
+new Chart(document.getElementById("pieChart"),{
+
+    type:"pie",
+
+    data:{
+
+        labels:{{ pie_labels|tojson }},
+
+        datasets:[{
+
+            data:{{ pie_values|tojson }}
+
+        }]
+
+    }
+
+});
+
+new Chart(document.getElementById("lineChart"),{
+
+    type:"line",
+
+    data:{
+
+        labels:{{ trend_labels|tojson }},
+
+        datasets:[{
+
+            label:"Predictions",
+
+            data:{{ trend_values|tojson }},
+
+            fill:false,
+
+            tension:0.3
+
+        }]
+
+    }
+
+});
+
+new Chart(document.getElementById("barChart"),{
+
+    type:"bar",
+
+    data:{
+
+        labels:{{ pie_labels|tojson }},
+
+        datasets:[{
+
+            label:"Predictions",
+
+            data:{{ pie_values|tojson }}
+
+        }]
+
+    }
+
+});
+
+</script>
+
+<!-- ===========================
+     Animated Counters
+=========================== -->
+
+<script>
+
+function animateCounter(id,endValue,suffix=""){
+
+    let current=0;
+
+    const element=document.getElementById(id);
+
+    const step=Math.max(1,endValue/60);
+
+    const timer=setInterval(()=>{
+
+        current+=step;
+
+        if(current>=endValue){
+
+            current=endValue;
+
+            clearInterval(timer);
+
+        }
+
+        if(suffix==="%" && endValue % 1 !==0){
+
+            element.innerHTML=current.toFixed(2)+suffix;
+
+        }else{
+
+            element.innerHTML=Math.floor(current)+suffix;
+
+        }
+
+    },20);
+
+}
+
+animateCounter("totalCounter",{{ stats.total }});
+
+animateCounter("diseaseCounter",{{ stats.diseases }});
+
+animateCounter("todayCounter",{{ stats.today }});
+
+animateCounter("avgCounter",{{ stats.average }},"%");
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Prediction History</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>📜 Prediction History</h1>
+
+    <p>Previous AI Skin Disease Predictions</p>
+
+</header>
+
+<div class="container">
+
+    <div class="right-panel" style="grid-column:1/-1;">
+
+        <table class="history-table">
+
+            <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Disease</th>
+
+                <th>Confidence</th>
+
+                <th>Date</th>
+
+                <th>Action</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for row in history %}
+
+            <tr>
+
+                <td>{{ row[0] }}</td>
+
+                <td>{{ row[1] }}</td>
+
+                <td>{{ row[2] }}%</td>
+
+                <td>{{ row[4] }}</td>
+
+                <td>
+
+                    <a
+                        href="/delete/{{ row[0] }}"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to delete this prediction?');">
+
+                        🗑 Delete
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <br>
+
+        <a href="/" class="history-btn">
+
+            ⬅ Back to Home
+
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
