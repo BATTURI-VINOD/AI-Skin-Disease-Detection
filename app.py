@@ -29,49 +29,41 @@ from database import (
     get_best_prediction
 )
 from pdf_generator import create_pdf
+
+# -----------------------------
+# Flask App
+# -----------------------------
 app = Flask(__name__)
+
 latest_prediction = {}
-UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-model = tf.keras.models.load_model(
-    "model/SkinDisease_EfficientNetB0.keras"
-    
-)
-
-
-
-
-UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app = Flask(__name__)
 
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# Create folders if they don't exist
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+# Create required folders
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs("reports", exist_ok=True)
 
-# Load model
+# Load AI Model
 model = tf.keras.models.load_model(
     "model/SkinDisease_EfficientNetB0.keras"
 )
 
-# Initialize database
-init_db()
-model = tf.keras.models.load_model(
-    "model/SkinDisease_EfficientNetB0.keras"
-)
-
-# Create database and table
+# Initialize Database
 init_db()
 
+
+# -----------------------------
+# Home
+# -----------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# -----------------------------
+# Predict
+# -----------------------------
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -128,6 +120,11 @@ def predict():
         import traceback
         traceback.print_exc()
         return str(e), 500
+
+
+# -----------------------------
+# History
+# -----------------------------
 @app.route("/history")
 def history():
 
@@ -137,32 +134,49 @@ def history():
         "history.html",
         history=data
     )
-@app.route("/download-report")
-@app.route("/delete/<int:prediction_id>")
+
+
+# -----------------------------
+# Delete History
+# -----------------------------
 @app.route("/delete/<int:prediction_id>")
 def delete(prediction_id):
     delete_prediction(prediction_id)
     return redirect("/history")
 
 
+# -----------------------------
+# Download PDF Report
+# -----------------------------
 @app.route("/download-report")
 def download_report():
+    try:
 
-    if not latest_prediction:
-        return "No prediction available.", 400
+        if not latest_prediction:
+            return "No prediction available.", 400
 
-    filename = create_pdf(
-        latest_prediction["disease"],
-        latest_prediction["confidence"],
-        latest_prediction["info"],
-        latest_prediction["image"]
-    )
+        filename = create_pdf(
+            latest_prediction["disease"],
+            latest_prediction["confidence"],
+            latest_prediction["info"],
+            latest_prediction["image"]
+        )
 
-    return send_from_directory(
-        "reports",
-        filename,
-        as_attachment=True
-    )
+        return send_from_directory(
+            "reports",
+            filename,
+            as_attachment=True
+        )
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return str(e), 500
+
+
+# -----------------------------
+# Dashboard
+# -----------------------------
 @app.route("/dashboard")
 def dashboard():
 
@@ -195,5 +209,10 @@ def dashboard():
         most_common=most_common,
         best_prediction=best_prediction
     )
+
+
+# -----------------------------
+# Run App
+# -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=True)
