@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" width="100%" alt="AI Skin Disease Detection Banner"/>
+<img src="./assets/banner.png" width="100%" alt="AI Skin Disease Detection Banner"/>
 
 # 🩺 AI Skin Disease Detection System
 
@@ -186,24 +186,24 @@ The model was trained using a labeled skin disease dataset consisting of multipl
 <tr>
 <td width="50%">
 <b>🏠 Home Page</b><br>
-<img src="assets/home.png">
+<img src="./assets/home.png">
 </td>
 
 <td width="50%">
 <b>🧠 Prediction Report</b><br>
-<img src="assets/prediction.png">
+<img src="./assets/prediction.png">
 </td>
 </tr>
 
 <tr>
 <td>
 <b>📜 Prediction History</b><br>
-<img src="assets/history.png">
+<img src="./assets/history.png">
 </td>
 
 <td>
 <b>📊 Analytics Dashboard</b><br>
-<img src="assets/dashboard.png">
+<img src="./assets/dashboard.png">
 </td>
 </tr>
 </table>
